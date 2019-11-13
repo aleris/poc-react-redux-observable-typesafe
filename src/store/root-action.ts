@@ -1,5 +1,5 @@
-import * as documentActions from './documents/actions'
+import * as documentsActions from './documents/actions'
 
 export default {
-  documents: documentActions
+  documentsActions
 }

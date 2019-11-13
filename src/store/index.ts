@@ -19,7 +19,7 @@ export const epicMiddleware = createEpicMiddleware<
 const initialState = {}
 
 const store = createStore(
-  rootReducer(),
+  rootReducer,
   initialState,
   composeWithDevTools(applyMiddleware(epicMiddleware))
 )

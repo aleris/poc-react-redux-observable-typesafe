@@ -1,5 +1,5 @@
 import { combineEpics } from 'redux-observable';
 
-import * as articles from './documents/epics'
+import * as documentsEpics from './documents/epics'
 
-export default combineEpics(...Object.values(articles))
+export default combineEpics(...Object.values(documentsEpics))

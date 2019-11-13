@@ -2,28 +2,28 @@ import { RootState } from 'typesafe-actions'
 import * as React from 'react'
 import { connect } from 'react-redux'
 import { DocumentEdit } from '../store/documents/models'
-import {
-  documentEventsDoSendMessageAction,
-  documentEventsDoConnectAction,
-  getDocumentAction
-} from '../store/documents/actions'
 import * as selectors from '../store/documents/selectors'
+import {
+  getDocument,
+  sendMessage,
+  webSocketConnect
+} from '../store/documents/actions'
 
 type Props = {
   id: string
 
-  getDocument: typeof getDocumentAction.request
+  getDocument: typeof getDocument.request
   isLoading: boolean
   document: DocumentEdit
 
-  connect: typeof documentEventsDoConnectAction
-  send: typeof documentEventsDoSendMessageAction
+  connect: typeof webSocketConnect.request
+  send: typeof sendMessage.request
 }
 
 const mapDispatchToProps = {
-  getDocument: getDocumentAction.request,
-  connect: documentEventsDoConnectAction,
-  send: documentEventsDoSendMessageAction
+  getDocument: getDocument.request,
+  connect: webSocketConnect.request,
+  send: sendMessage.request
 }
 
 const mapStateToProps = (state: RootState) => ({

@@ -1,60 +1,53 @@
-import { RootAction, RootState, isActionOf, Services } from 'typesafe-actions'
-import { catchError, filter, map, mergeMap, switchMap } from 'rxjs/operators'
+import { RootEpic, isActionOf } from 'typesafe-actions'
+import { catchError, filter, map, switchMap, takeUntil } from 'rxjs/operators'
 import { from, of } from 'rxjs'
 import {
-  documentEventsMessageWasSentAction,
-  documentEventsMessageWasReceivedAction,
-  documentEventsDoSendMessageAction,
-  documentEventsDoConnectAction,
-  getDocumentAction,
-  documentEventsWasDisconnectedAction
+  getDocument,
+  receiveMessage,
+  sendMessage,
+  webSocketConnect
 } from './actions'
-import { Epic } from 'redux-observable'
 
-export const getDocumentEpic: Epic<
-  RootAction,
-  RootAction,
-  RootState,
-  Services
-> = (action$, state$, { api }) =>
+export const getDocumentEpic: RootEpic = (action$, _, { api }) =>
   action$.pipe(
-    filter(isActionOf(getDocumentAction.request)),
+    filter(isActionOf(getDocument.request)),
     switchMap(action =>
       from(api.documents.get(action.payload)).pipe(
-        map(getDocumentAction.success),
-        catchError(err => of(getDocumentAction.failure(new Error(err))))
+        map(getDocument.success),
+        catchError(err => of(getDocument.failure(new Error(err)))),
+        takeUntil(action$.pipe(filter(isActionOf(getDocument.cancel))))
       )
     )
   )
 
-export const documentEventsConnectEpic: Epic<
-  RootAction,
-  RootAction,
-  RootState,
-  Services
-> = (action$, state$, { api }) =>
+export const webSocketConnectEpic: RootEpic = (action$, _, { api }) =>
   action$.pipe(
-    filter(isActionOf(documentEventsDoConnectAction)),
-    mergeMap(action =>
-      from(api.socket.connect(action.payload)).pipe(
-        map(documentEventsMessageWasReceivedAction),
-        catchError(err =>
-          of(documentEventsWasDisconnectedAction(new Error(err)))
-        )
+    filter(isActionOf(webSocketConnect.request)),
+    switchMap(action => {
+      api.socket.connect(action.payload)
+      return api.socket.onOpen$.pipe(
+        map(webSocketConnect.success),
+        catchError(err => of(webSocketConnect.failure(new Error(err))))
+      )
+    })
+  )
+
+export const receiveMessageEpic: RootEpic = (action$, _, { api }) =>
+  action$.pipe(
+    filter(isActionOf(webSocketConnect.success)),
+    switchMap(() =>
+      from(api.socket.webSocket$).pipe(
+        map(receiveMessage.success),
+        catchError(err => of(receiveMessage.failure(new Error(err))))
       )
     )
   )
 
-export const documentEventsSendMessageEpic: Epic<
-  RootAction,
-  RootAction,
-  RootState,
-  Services
-> = (action$, state$, { api }) =>
+export const sendMessageEpic: RootEpic = (action$, _, { api }) =>
   action$.pipe(
-    filter(isActionOf(documentEventsDoSendMessageAction)),
+    filter(isActionOf(sendMessage.request)),
     map(action => {
       api.socket.webSocket$.next(action.payload)
-      return documentEventsMessageWasSentAction(action.payload)
+      return sendMessage.success()
     })
   )

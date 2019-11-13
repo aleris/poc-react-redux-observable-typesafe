@@ -5,14 +5,12 @@ import {
 } from '../store/documents/models'
 import { Subject } from 'rxjs'
 
-const onOpen$ = new Subject()
-const onClose$ = new Subject()
+export const onOpen$ = new Subject<Event>()
+export const onClose$ = new Subject<CloseEvent>()
 
 export let webSocket$: WebSocketSubject<DocumentEdit>
 
-export function connect(
-  webSocketConnectionParams: WebSocketConnectionParams
-): WebSocketSubject<DocumentEdit> {
+export function connect(webSocketConnectionParams: WebSocketConnectionParams) {
   webSocket$ = webSocket<DocumentEdit>({
     url: webSocketConnectionParams.url,
     openObserver: onOpen$,
@@ -27,5 +25,5 @@ export function connect(
     })
   }, 5000)
 
-  return webSocket$
+  webSocket$.subscribe()
 }

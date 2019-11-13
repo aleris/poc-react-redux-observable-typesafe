@@ -1,10 +1,9 @@
 import { combineReducers } from 'redux'
 
-import documents from './documents/reducer'
+import documentsReducer from './documents/reducer'
 
-const rootReducer = () =>
-  combineReducers({
-    documents
-  })
+const rootReducer = combineReducers({
+  documents: documentsReducer
+})
 
 export default rootReducer
